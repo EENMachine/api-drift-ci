@@ -56,17 +56,26 @@ curl -fsSL "${OASDIFF_TGZ}" | tar xz -C "${WORKDIR}"
 export PATH="${WORKDIR}:${PATH}"
 oasdiff version
 
+OASDIFF_REF_FLAGS=()
+if [[ "${ALLOW_EXTERNAL_REFS,,}" == "false" ]]; then
+  OASDIFF_REF_FLAGS+=(--allow-external-refs=false)
+  echo "oasdiff: external refs disabled (--allow-external-refs=false)"
+else
+  OASDIFF_REF_FLAGS+=(--allow-external-refs=true)
+fi
+
 SUMMARY_JSON="${WORKDIR}/summary.json"
 BREAKING_MD="${WORKDIR}/breaking.md"
 CHANGELOG_MD="${WORKDIR}/changelog.md"
 BODY="${WORKDIR}/body.md"
 
-oasdiff summary "${BASE_FILE}" "${HEAD_FILE}" -f json >"${SUMMARY_JSON}"
-oasdiff breaking "${BASE_FILE}" "${HEAD_FILE}" -f markdown --color never >"${BREAKING_MD}" || true
-oasdiff changelog "${BASE_FILE}" "${HEAD_FILE}" -f markdown --color never --level INFO >"${CHANGELOG_MD}" || true
+oasdiff summary "${BASE_FILE}" "${HEAD_FILE}" -f json "${OASDIFF_REF_FLAGS[@]}" >"${SUMMARY_JSON}"
+oasdiff breaking "${BASE_FILE}" "${HEAD_FILE}" -f markdown --color never "${OASDIFF_REF_FLAGS[@]}" >"${BREAKING_MD}" || true
+oasdiff changelog "${BASE_FILE}" "${HEAD_FILE}" -f markdown --color never --level INFO "${OASDIFF_REF_FLAGS[@]}" >"${CHANGELOG_MD}" || true
 
 export MARKER COMMENT_TITLE MAX_CHANGELOG_CHARS SPEC_PATH BASE_SHA HEAD_SHA BASE_MODE
 export SUMMARY_JSON BREAKING_MD CHANGELOG_MD
+export PRODUCT_REPOSITORY="${PRODUCT_REPOSITORY:-}"
 python3 "${ROOT}/scripts/render_body.py" >"${BODY}"
 
 PR_NUMBER="$(jq -r .pull_request.number "${GITHUB_EVENT_PATH}")"
@@ -77,7 +86,7 @@ python3 "${ROOT}/scripts/post_pr_comment.py" "${BODY}"
 if [[ "${FAIL_ON_BREAKING,,}" == "true" ]]; then
   echo "Checking for breaking changes (--fail-on ERR)..."
   set +e
-  oasdiff breaking "${BASE_FILE}" "${HEAD_FILE}" -f text --color never --fail-on ERR >/dev/null
+  oasdiff breaking "${BASE_FILE}" "${HEAD_FILE}" -f text --color never --fail-on ERR "${OASDIFF_REF_FLAGS[@]}" >/dev/null
   st=$?
   set -e
   if [[ "${st}" -ne 0 ]]; then

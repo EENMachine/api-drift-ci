@@ -7,7 +7,8 @@ on:
       - "action.yml"
       - "run.sh"
       - "scripts/**"
-      - ".github/workflows/openapi-drift.yml"
+      - ".github/workflows/**"
+      - "docs/**"
 
 permissions:
   contents: read

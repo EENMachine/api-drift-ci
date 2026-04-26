@@ -1,0 +1,58 @@
+# Call this from another repository so you only maintain one workflow line per service.
+# The composite action pin below MUST match the same semver tag as this workflow file
+# (see docs/SHIP_AND_MARKET.md, section "Release checklist").
+name: Reusable OpenAPI drift
+
+on:
+  workflow_call:
+    inputs:
+      spec-path:
+        description: Repository-relative path to the OpenAPI document.
+        required: true
+        type: string
+      fail-on-breaking:
+        description: Fail the job when oasdiff reports breaking (ERR) changes.
+        required: false
+        type: boolean
+        default: true
+      oasdiff-version:
+        description: oasdiff release (no leading v).
+        required: false
+        type: string
+        default: "1.15.0"
+      comment-title:
+        required: false
+        type: string
+        default: "OpenAPI drift"
+      max-changelog-chars:
+        required: false
+        type: string
+        default: "14000"
+      allow-external-refs:
+        description: Set false for stricter handling of untrusted fork PRs (see SECURITY.md).
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Pin: bump when you cut a new release tag (same tag as this workflow ref).
+      - uses: EENMachine/api-drift-ci@v0.1.0
+        with:
+          spec-path: ${{ inputs.spec-path }}
+          github-token: ${{ github.token }}
+          fail-on-breaking: "${{ inputs.fail-on-breaking }}"
+          oasdiff-version: ${{ inputs.oasdiff-version }}
+          comment-title: ${{ inputs.comment-title }}
+          max-changelog-chars: "${{ inputs.max-changelog-chars }}"
+          allow-external-refs: "${{ inputs.allow-external-refs }}"

@@ -66,7 +66,13 @@ def main() -> None:
         ]
     lines += ["", "### Summary", "", "\n".join(summary_line), "", "### Breaking changes"]
     lines += [breaking_md if breaking_md else "_None detected._", "", "### Full changelog"]
-    lines += [changelog_md if changelog_md else "_No changes._", "", "---", "_api-drift-ci_"]
+    lines += [changelog_md if changelog_md else "_No changes._", "", "---"]
+    prod = os.environ.get("PRODUCT_REPOSITORY", "").strip()
+    if prod and "/" in prod:
+        url = f"https://github.com/{prod}"
+        lines.append(f"_Posted by [**api-drift-ci**]({url}). Powered by [oasdiff](https://github.com/oasdiff/oasdiff)._")
+    else:
+        lines.append("_Posted by **api-drift-ci** (powered by [oasdiff](https://github.com/oasdiff/oasdiff))._")
     sys.stdout.write("\n".join(lines))
 
 
