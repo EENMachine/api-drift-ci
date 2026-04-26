@@ -1,6 +1,6 @@
 # Call this from another repository so you only maintain one workflow line per service.
 # The composite action pin below MUST match the same semver tag as this workflow file
-# (see docs/SHIP_AND_MARKET.md, section "Release checklist").
+# (see docs/MAINTAINERS.md, release checklist).
 name: Reusable OpenAPI drift
 
 on:
@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 0
 
       # Pin: bump when you cut a new release tag (same tag as this workflow ref).
-      - uses: EENMachine/api-drift-ci@v0.1.0
+      - uses: EENMachine/api-drift-ci@v0.1.1
         with:
           spec-path: ${{ inputs.spec-path }}
           github-token: ${{ github.token }}

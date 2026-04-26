@@ -21,3 +21,7 @@ The action needs **`pull-requests: write`** to upsert the PR comment. Use the de
 ### Runner and supply chain
 
 The action downloads a pinned **oasdiff** release tarball from GitHub Releases (`oasdiff/oasdiff`). The composite runs on **`ubuntu-latest`**. Review releases before upgrading the default `oasdiff-version` input.
+
+### Operational questions
+
+For checkout depth, fork PRs, and token permissions, see [**docs/FAQ.md**](docs/FAQ.md).

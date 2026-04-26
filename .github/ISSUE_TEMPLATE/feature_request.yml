@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an improvement for API Drift CI
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What workflow or team need is not met today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would you like the action or docs to behave?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

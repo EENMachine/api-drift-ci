@@ -1,0 +1,36 @@
+name: Bug report
+description: The action or reusable workflow does not behave as documented
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem. Please include enough detail that we can reproduce it.
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow YAML (redact secrets)
+      description: Paste the job that calls this action or the reusable workflow.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Link to the Actions run or paste the failing step logs.
+      render: shell
+    validations:
+      required: false

@@ -1,8 +1,9 @@
 name: API Drift CI
-description: Compare an OpenAPI spec on the PR base ref vs the PR head ref and post (or update) a sticky PR comment with breaking and non-breaking changes.
+description: >-
+  OpenAPI PR checks: diff spec at base vs head, sticky comment (breaking + changelog), optional CI fail. Powered by oasdiff.
 branding:
-  icon: git-pull-request
-  color: purple
+  icon: git-compare
+  color: blue
 
 inputs:
   spec-path:
@@ -29,7 +30,7 @@ inputs:
     required: false
     default: "true"
   github-token:
-    description: Token with pull-requests write (typically secrets.GITHUB_TOKEN).
+    description: Token with pull-requests write (typically secrets.GITHUB_TOKEN or github.token).
     required: true
 
 runs:

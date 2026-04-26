@@ -3,12 +3,18 @@ name: OpenAPI drift
 on:
   pull_request:
     paths:
-      - "examples/spec/**"
+      - "examples/**"
       - "action.yml"
       - "run.sh"
       - "scripts/**"
-      - ".github/workflows/**"
+      - ".github/**"
       - "docs/**"
+      - "README.md"
+      - "CODE_OF_CONDUCT.md"
+      - "LICENSE"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
 
 permissions:
   contents: read

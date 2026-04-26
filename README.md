@@ -1,21 +1,28 @@
-# api-drift-ci
+# API Drift CI
+
+**OpenAPI drift checks on every pull request** — diff your spec at the PR **base** and **head**, get one **sticky PR comment** (breaking changes + full changelog via [oasdiff](https://github.com/oasdiff/oasdiff)), and optionally **fail CI** when clients would break.
 
 [![CI](https://github.com/EENMachine/api-drift-ci/actions/workflows/ci.yml/badge.svg)](https://github.com/EENMachine/api-drift-ci/actions/workflows/ci.yml)
-
-**OpenAPI drift checks for every pull request.** This GitHub Action compares your spec at the **PR base SHA** and **PR head SHA**, posts a **sticky PR comment** (markdown from [oasdiff](https://github.com/oasdiff/oasdiff)), and can **fail the job** when breaking changes are detected. Runs on **`ubuntu-latest`** (downloads the Linux `oasdiff` binary).
-
-| If you want… | Read this first |
-| --- | --- |
-| To adopt it in your repo in under a minute | [Quick start](#quick-start) |
-| A one-job wrapper you reuse across many services | [Reusable workflow](#reusable-workflow) |
-| How we tag, release, and talk about the product | [**docs/SHIP_AND_MARKET.md**](docs/SHIP_AND_MARKET.md) |
-| Fork PRs and `$ref` safety | [**SECURITY.md**](SECURITY.md) |
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/EENMachine/api-drift-ci/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/v/release/EENMachine/api-drift-ci?sort=semver)](https://github.com/EENMachine/api-drift-ci/releases)
 
 ---
 
-## Quick start
+## Why teams use this
 
-**Requirements:** `ubuntu-latest`, `actions/checkout@v4` with **`fetch-depth: 0`**, and `pull-requests: write` on the token.
+| Benefit | What you get |
+| --- | --- |
+| **Visibility** | Every PR shows exactly how the published OpenAPI contract moved. |
+| **Governance** | Turn on **fail on breaking** when you are ready to gate merges. |
+| **Low friction** | No separate SaaS: runs in GitHub Actions on `ubuntu-latest`. |
+
+**Runtime:** `ubuntu-latest` only (Linux **amd64** [oasdiff](https://github.com/oasdiff/oasdiff) binary).
+
+---
+
+## Quick start (composite action)
+
+**Checklist:** `ubuntu-latest` · `actions/checkout@v4` with **`fetch-depth: 0`** · workflow `permissions` include **`pull-requests: write`**.
 
 ```yaml
 name: OpenAPI drift
@@ -23,7 +30,7 @@ name: OpenAPI drift
 on:
   pull_request:
     paths:
-      - "docs/openapi.yaml" # change to your spec path
+      - "docs/openapi.yaml" # your spec path
 
 permissions:
   contents: read
@@ -37,19 +44,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: EENMachine/api-drift-ci@v0.1.0
+      - uses: EENMachine/api-drift-ci@v0.1.1
         with:
           spec-path: docs/openapi.yaml
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-`fetch-depth: 0` is required so `git show <sha>:path` can read both sides of the PR.
+`fetch-depth: 0` is **required** so `git show <sha>:path` can read both sides of the pull request.
 
 ---
 
-## Reusable workflow
+## Reusable workflow (one job per repo)
 
-In each service repo, call the workflow we publish here (pin the **`@v…`** ref you trust):
+Pin the **`@v…`** ref you trust (same as the composite):
 
 ```yaml
 name: OpenAPI drift
@@ -65,12 +72,18 @@ permissions:
 
 jobs:
   drift:
-    uses: EENMachine/api-drift-ci/.github/workflows/reusable-openapi-drift.yml@v0.1.0
+    uses: EENMachine/api-drift-ci/.github/workflows/reusable-openapi-drift.yml@v0.1.1
     with:
       spec-path: docs/openapi.yaml
 ```
 
-Optional `with:` keys match the composite inputs (`fail-on-breaking`, `oasdiff-version`, `comment-title`, `max-changelog-chars`, `allow-external-refs`). The reusable workflow’s internal composite pin is bumped **on each release** so the tag stays self-consistent (see [docs/SHIP_AND_MARKET.md](docs/SHIP_AND_MARKET.md)).
+Optional `with:` keys: `fail-on-breaking`, `oasdiff-version`, `comment-title`, `max-changelog-chars`, `allow-external-refs` (same semantics as the table below).
+
+---
+
+## Example output
+
+See [**docs/EXAMPLE_PR_COMMENT.md**](docs/EXAMPLE_PR_COMMENT.md) for what the sticky PR comment looks like.
 
 ---
 
@@ -78,38 +91,64 @@ Optional `with:` keys match the composite inputs (`fail-on-breaking`, `oasdiff-v
 
 | Input | Required | Default | Description |
 | --- | --- | --- | --- |
-| `spec-path` | yes | — | Repo-relative path to the OpenAPI file on base and head. |
-| `github-token` | yes | — | Typically `secrets.GITHUB_TOKEN` (needs `pull-requests: write`). |
+| `spec-path` | yes | — | Repo-relative path to the OpenAPI file on **base** and **head**. |
+| `github-token` | yes | — | `secrets.GITHUB_TOKEN` or `github.token` (needs **`pull-requests: write`**). |
 | `oasdiff-version` | no | `1.15.0` | oasdiff release (no `v` prefix). |
 | `fail-on-breaking` | no | `true` | Fail the job when `oasdiff breaking --fail-on ERR` exits non-zero. |
-| `comment-title` | no | `OpenAPI drift` | PR comment heading. |
-| `max-changelog-chars` | no | `14000` | Truncate changelog section in the comment. |
-| `allow-external-refs` | no | `true` | When `false`, passes `--allow-external-refs=false` to oasdiff (stricter for untrusted fork PRs; may break specs that use external `$ref`). |
+| `comment-title` | no | `OpenAPI drift` | Markdown heading in the PR comment. |
+| `max-changelog-chars` | no | `14000` | Truncate changelog section for very large specs. |
+| `allow-external-refs` | no | `true` | Set **`false`** on untrusted fork PRs to disable remote `$ref` resolution ([**SECURITY.md**](SECURITY.md)). |
 
 ---
 
-## Behavior
+## Behavior (customer view)
 
-- Runs on **`pull_request`** only (other events log and exit successfully).
-- If the spec is **missing on the base** commit, head is compared to a tiny empty OpenAPI stub (useful when you **add** a spec file in a PR).
-- The PR comment contains a hidden HTML marker so the same comment is **updated** on new pushes.
-- Breaking vs non-breaking rules are entirely those of **oasdiff** (we do not reinterpret).
+- **Event:** `pull_request` only — other events are skipped with a log line (success).
+- **New spec file:** if the file is missing on the **base** commit, the action compares **head** against a minimal empty OpenAPI stub so additive PRs still get a useful comment.
+- **Sticky comment:** a hidden marker in the comment body lets the action **update** the same comment on new pushes.
+- **Breaking rules:** defined by **oasdiff**, not re-interpreted here.
 
 ---
 
-## Project layout
+## Troubleshooting
 
-| Path | Purpose |
+Start with [**docs/FAQ.md**](docs/FAQ.md) (checkout depth, fork PRs, permissions, runner OS).
+
+---
+
+## Security
+
+See [**SECURITY.md**](SECURITY.md) (`GITHUB_TOKEN`, fork PRs, external `$ref`).
+
+---
+
+## Community
+
+- [**Contributing**](CONTRIBUTING.md)
+- [**Code of Conduct**](CODE_OF_CONDUCT.md)
+- [**Changelog**](CHANGELOG.md)
+- [**Report an issue**](https://github.com/EENMachine/api-drift-ci/issues/new/choose)
+
+---
+
+## Repository layout (reference)
+
+| Path | Role |
 | --- | --- |
-| `action.yml` | Composite action metadata and inputs. |
-| `run.sh` | Checkout-independent diff + install oasdiff + invoke scripts. |
-| `scripts/render_body.py` | Build markdown for the PR comment. |
-| `scripts/post_pr_comment.py` | Upsert the sticky comment via the GitHub API. |
-| `.github/workflows/reusable-openapi-drift.yml` | Caller-friendly `workflow_call` wrapper. |
-| `docs/SHIP_AND_MARKET.md` | **Shipping and marketing playbook** for maintainers. |
+| `action.yml` | Composite Action metadata (also used for GitHub Marketplace). |
+| `run.sh` | Installs oasdiff, runs diffs, drives scripts. |
+| `scripts/render_body.py` | Builds PR markdown. |
+| `scripts/post_pr_comment.py` | Creates or updates the PR comment. |
+| `.github/workflows/reusable-openapi-drift.yml` | Optional `workflow_call` wrapper for adopters. |
 
 ---
 
-## Contributing and changelog
+## Maintainers
 
-See [**CONTRIBUTING.md**](CONTRIBUTING.md) and [**CHANGELOG.md**](CHANGELOG.md).
+Publishing, Marketplace, and positioning: [**docs/MAINTAINERS.md**](docs/MAINTAINERS.md) · GitHub **About** copy: [**docs/REPO_SETTINGS.md**](docs/REPO_SETTINGS.md)
+
+---
+
+## License
+
+MIT — see [**LICENSE**](LICENSE).
