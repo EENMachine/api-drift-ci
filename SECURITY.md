@@ -22,6 +22,10 @@ The action needs **`pull-requests: write`** to upsert the PR comment. Use the de
 
 The action downloads a pinned **oasdiff** release tarball from GitHub Releases (`oasdiff/oasdiff`). The composite runs on **`ubuntu-latest`**. Review releases before upgrading the default `oasdiff-version` input.
 
+### Policy and ignore files
+
+Optional **`.api-drift-ci.toml`** (or the `policy-file` input) and the referenced ignore files are read from the **pull request head** commit, like your OpenAPI spec. For **fork** PRs, treat policy changes as contributor-controlled configuration and review them like code.
+
 ### Operational questions
 
 For checkout depth, fork PRs, and token permissions, see [**docs/FAQ.md**](docs/FAQ.md).

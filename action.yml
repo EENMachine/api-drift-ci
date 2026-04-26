@@ -1,6 +1,6 @@
 name: API Drift CI
 description: >-
-  OpenAPI PR checks: diff spec at base vs head, sticky comment (breaking + changelog), optional CI fail. Powered by oasdiff.
+  OpenAPI PR checks: sticky comment, optional CI fail, Actions job summary, repo policy TOML for oasdiff ignores. oasdiff.
 branding:
   icon: git-compare
   color: blue
@@ -29,6 +29,10 @@ inputs:
     description: When false, passes --allow-external-refs=false to oasdiff (safer for untrusted fork PRs; breaks specs that $ref external URLs).
     required: false
     default: "true"
+  policy-file:
+    description: Optional repo-relative path on the PR head to a TOML policy file. If unset, tries .api-drift-ci.toml then api-drift-ci.toml when present.
+    required: false
+    default: ""
   github-token:
     description: Token with pull-requests write (typically secrets.GITHUB_TOKEN or github.token).
     required: true
@@ -45,6 +49,8 @@ runs:
         COMMENT_TITLE: ${{ inputs.comment-title }}
         MAX_CHANGELOG_CHARS: ${{ inputs.max-changelog-chars }}
         ALLOW_EXTERNAL_REFS: ${{ inputs.allow-external-refs }}
+        POLICY_FILE: ${{ inputs.policy-file }}
         PRODUCT_REPOSITORY: ${{ github.action_repository }}
+        PR_HTML_URL: ${{ github.event.pull_request.html_url }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: bash "${{ github.action_path }}/run.sh"

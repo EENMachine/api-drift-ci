@@ -1,6 +1,6 @@
 # API Drift CI
 
-**OpenAPI drift checks on every pull request** — diff your spec at the PR **base** and **head**, get one **sticky PR comment** (breaking changes + full changelog via [oasdiff](https://github.com/oasdiff/oasdiff)), and optionally **fail CI** when clients would break.
+**OpenAPI drift checks on every pull request** — diff your spec at the PR **base** and **head**, get one **sticky PR comment** (breaking changes + full changelog via [oasdiff](https://github.com/oasdiff/oasdiff)), an **Actions job summary** on every run, optional **repo policy** (TOML → oasdiff ignore lists), and optionally **fail CI** when clients would break.
 
 [![CI](https://github.com/EENMachine/api-drift-ci/actions/workflows/ci.yml/badge.svg)](https://github.com/EENMachine/api-drift-ci/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/EENMachine/api-drift-ci/blob/master/LICENSE)
@@ -15,6 +15,8 @@
 | **Visibility** | Every PR shows exactly how the published OpenAPI contract moved. |
 | **Governance** | Turn on **fail on breaking** when you are ready to gate merges. |
 | **Low friction** | No separate SaaS: runs in GitHub Actions on `ubuntu-latest`. |
+| **Job summary** | Every run appends a verdict to the workflow **Summary** tab (verdict, oasdiff exit code, excerpt, PR link)—not only a PR comment. |
+| **Repo policy file** | Optional **`.api-drift-ci.toml`** on the PR branch maps to oasdiff **`--err-ignore` / `--warn-ignore`** (see [**docs/POLICY_FILE.md**](docs/POLICY_FILE.md)). |
 
 **Runtime:** `ubuntu-latest` only (Linux **amd64** [oasdiff](https://github.com/oasdiff/oasdiff) binary).
 
@@ -44,7 +46,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: EENMachine/api-drift-ci@v0.1.1
+      - uses: EENMachine/api-drift-ci@v0.1.2
         with:
           spec-path: docs/openapi.yaml
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -72,12 +74,12 @@ permissions:
 
 jobs:
   drift:
-    uses: EENMachine/api-drift-ci/.github/workflows/reusable-openapi-drift.yml@v0.1.1
+    uses: EENMachine/api-drift-ci/.github/workflows/reusable-openapi-drift.yml@v0.1.2
     with:
       spec-path: docs/openapi.yaml
 ```
 
-Optional `with:` keys: `fail-on-breaking`, `oasdiff-version`, `comment-title`, `max-changelog-chars`, `allow-external-refs` (same semantics as the table below).
+Optional `with:` keys: `fail-on-breaking`, `oasdiff-version`, `comment-title`, `max-changelog-chars`, `allow-external-refs`, `policy-file` (same semantics as the table below).
 
 ---
 
@@ -98,6 +100,7 @@ See [**docs/EXAMPLE_PR_COMMENT.md**](docs/EXAMPLE_PR_COMMENT.md) for what the st
 | `comment-title` | no | `OpenAPI drift` | Markdown heading in the PR comment. |
 | `max-changelog-chars` | no | `14000` | Truncate changelog section for very large specs. |
 | `allow-external-refs` | no | `true` | Set **`false`** on untrusted fork PRs to disable remote `$ref` resolution ([**SECURITY.md**](SECURITY.md)). |
+| `policy-file` | no | _(auto)_ | Repo-relative TOML on **HEAD**; if unset, tries `.api-drift-ci.toml` then `api-drift-ci.toml`. See [**docs/POLICY_FILE.md**](docs/POLICY_FILE.md). |
 
 ---
 
@@ -106,6 +109,8 @@ See [**docs/EXAMPLE_PR_COMMENT.md**](docs/EXAMPLE_PR_COMMENT.md) for what the st
 - **Event:** `pull_request` only — other events are skipped with a log line (success).
 - **New spec file:** if the file is missing on the **base** commit, the action compares **head** against a minimal empty OpenAPI stub so additive PRs still get a useful comment.
 - **Sticky comment:** a hidden marker in the comment body lets the action **update** the same comment on new pushes.
+- **Job summary:** appends a markdown report to **`$GITHUB_STEP_SUMMARY`** so the workflow run’s **Summary** page shows the outcome without opening the PR.
+- **Policy:** optional TOML + ignore files from **HEAD** are passed to oasdiff as documented in [**docs/POLICY_FILE.md**](docs/POLICY_FILE.md).
 - **Breaking rules:** defined by **oasdiff**, not re-interpreted here.
 
 ---
@@ -139,6 +144,9 @@ See [**SECURITY.md**](SECURITY.md) (`GITHUB_TOKEN`, fork PRs, external `$ref`).
 | `run.sh` | Installs oasdiff, runs diffs, drives scripts. |
 | `scripts/render_body.py` | Builds PR markdown. |
 | `scripts/post_pr_comment.py` | Creates or updates the PR comment. |
+| `scripts/write_step_summary.py` | Appends the Actions **job summary**. |
+| `scripts/parse_policy_toml.py` | Reads `.api-drift-ci.toml` / `policy-file`. |
+| `docs/POLICY_FILE.md` | Policy file schema and security notes. |
 | `.github/workflows/reusable-openapi-drift.yml` | Optional `workflow_call` wrapper for adopters. |
 
 ---

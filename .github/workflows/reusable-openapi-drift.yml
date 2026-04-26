@@ -33,6 +33,11 @@ on:
         required: false
         type: boolean
         default: true
+      policy-file:
+        description: Optional repo-relative TOML policy on head (see docs/POLICY_FILE.md). Empty uses auto-detect.
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -47,7 +52,7 @@ jobs:
           fetch-depth: 0
 
       # Pin: bump when you cut a new release tag (same tag as this workflow ref).
-      - uses: EENMachine/api-drift-ci@v0.1.1
+      - uses: EENMachine/api-drift-ci@v0.1.2
         with:
           spec-path: ${{ inputs.spec-path }}
           github-token: ${{ github.token }}
@@ -56,3 +61,4 @@ jobs:
           comment-title: ${{ inputs.comment-title }}
           max-changelog-chars: "${{ inputs.max-changelog-chars }}"
           allow-external-refs: "${{ inputs.allow-external-refs }}"
+          policy-file: "${{ inputs.policy-file }}"

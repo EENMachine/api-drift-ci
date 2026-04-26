@@ -30,3 +30,11 @@ Not today: the action downloads the **Linux amd64** oasdiff binary. Use **`runs-
 ## Where do breaking rules come from?
 
 From **[oasdiff](https://github.com/oasdiff/oasdiff)**. This action does not redefine “breaking”; it surfaces oasdiff’s report in the PR.
+
+## Where is the result if I do not read PR comments?
+
+Open the workflow run on GitHub → tab **Summary**. This action appends a **job summary** (verdict, oasdiff exit code, excerpt, link to the PR) on every run via `$GITHUB_STEP_SUMMARY`.
+
+## How do I suppress known breaking findings in CI?
+
+Add a repo policy file (see [**POLICY_FILE.md**](POLICY_FILE.md)): **`.api-drift-ci.toml`** on your PR branch can point to oasdiff-native **`err_ignore_file`** / **`warn_ignore_file`** text files. Ignores are applied to **breaking** and **changelog** oasdiff runs (not to the JSON **summary** step).

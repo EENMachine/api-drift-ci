@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-04-26
+
+### Added
+
+- **GitHub Actions job summary:** appends a rich markdown report to `$GITHUB_STEP_SUMMARY` (verdict, oasdiff exit code, details excerpt, PR link).
+- **Repo policy file:** optional `.api-drift-ci.toml` / `api-drift-ci.toml` (or `policy-file` input) maps to oasdiff `--err-ignore` and `--warn-ignore` files on the PR head.
+- Documentation: [docs/POLICY_FILE.md](docs/POLICY_FILE.md).
+
 ## [0.1.1] - 2026-04-26
 
 ### Changed
@@ -28,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - CI workflow (`bash -n`, Python compile).
 - Documentation: shipping/marketing playbook, security notes, contributing.
 
-[Unreleased]: https://github.com/EENMachine/api-drift-ci/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/EENMachine/api-drift-ci/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/EENMachine/api-drift-ci/releases/tag/v0.1.2
 [0.1.1]: https://github.com/EENMachine/api-drift-ci/releases/tag/v0.1.1
 [0.1.0]: https://github.com/EENMachine/api-drift-ci/releases/tag/v0.1.0

@@ -35,6 +35,11 @@ Internal playbook for releases, GitHub Marketplace, and positioning. **Customers
 
 ## Positioning and copy
 
+### Shipped differentiators (keep these sharp in marketing)
+
+- **Actions job summary** — every run writes to `$GITHUB_STEP_SUMMARY` so CI consumers see a verdict without opening the PR.
+- **Repo policy (`.api-drift-ci.toml`)** — maps to oasdiff’s native `--err-ignore` / `--warn-ignore` files; no parallel ignore grammar to learn beyond oasdiff’s own format ([docs/POLICY_FILE.md](POLICY_FILE.md)).
+
 ### One-line pitch
 
 > Stop shipping silent API breaks: every pull request gets a sticky OpenAPI diff (breaking vs safe) and optional CI failure—powered by oasdiff.
