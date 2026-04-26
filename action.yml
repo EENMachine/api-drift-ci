@@ -1,0 +1,43 @@
+name: API Drift CI
+description: Compare an OpenAPI spec on the PR base ref vs the PR head ref and post (or update) a sticky PR comment with breaking and non-breaking changes.
+branding:
+  icon: git-pull-request
+  color: purple
+
+inputs:
+  spec-path:
+    description: Repository-relative path to the OpenAPI document (YAML or JSON), compared at base SHA vs head SHA.
+    required: true
+  oasdiff-version:
+    description: oasdiff release version (without leading v), e.g. 1.15.0.
+    required: false
+    default: "1.15.0"
+  fail-on-breaking:
+    description: When true, the step fails if oasdiff reports breaking changes (ERR level).
+    required: false
+    default: "true"
+  comment-title:
+    description: Heading shown at the top of the PR comment.
+    required: false
+    default: OpenAPI drift
+  max-changelog-chars:
+    description: Truncate the changelog section after this many characters to keep comments readable.
+    required: false
+    default: "14000"
+  github-token:
+    description: Token with pull-requests write (typically secrets.GITHUB_TOKEN).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Compare OpenAPI and upsert PR comment
+      shell: bash
+      env:
+        SPEC_PATH: ${{ inputs.spec-path }}
+        OASDIFF_VERSION: ${{ inputs.oasdiff-version }}
+        FAIL_ON_BREAKING: ${{ inputs.fail-on-breaking }}
+        COMMENT_TITLE: ${{ inputs.comment-title }}
+        MAX_CHANGELOG_CHARS: ${{ inputs.max-changelog-chars }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${{ github.action_path }}/run.sh"

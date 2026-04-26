@@ -1,0 +1,28 @@
+name: OpenAPI drift
+
+on:
+  pull_request:
+    paths:
+      - "examples/spec/**"
+      - "action.yml"
+      - "run.sh"
+      - "scripts/**"
+      - ".github/workflows/openapi-drift.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./
+        with:
+          spec-path: examples/spec/openapi.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-breaking: "false"
