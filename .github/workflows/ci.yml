@@ -23,4 +23,7 @@ jobs:
         run: bash -n run.sh
 
       - name: Python compile
-        run: python3 -m py_compile scripts/render_body.py scripts/post_pr_comment.py scripts/parse_policy_toml.py scripts/write_step_summary.py
+        run: python3 -m py_compile scripts/render_body.py scripts/post_pr_comment.py scripts/parse_policy_toml.py scripts/write_step_summary.py scripts/test_policy_and_summary.py
+
+      - name: Policy and summary smoke tests
+        run: python3 scripts/test_policy_and_summary.py

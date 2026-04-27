@@ -5,7 +5,7 @@ Thank you for helping improve **API Drift CI**.
 ## Development
 
 - Edit the composite (`action.yml`, `run.sh`, `scripts/`) and validate with `.github/workflows/openapi-drift.yml` using `uses: ./`.
-- Locally: `bash -n run.sh` and `python3 -m py_compile scripts/render_body.py scripts/post_pr_comment.py` (CI runs the same checks on Ubuntu).
+- Locally: `bash -n run.sh`, `python3 -m py_compile scripts/render_body.py scripts/post_pr_comment.py scripts/parse_policy_toml.py scripts/write_step_summary.py scripts/test_policy_and_summary.py`, and `python3 scripts/test_policy_and_summary.py` (CI runs compile + smoke tests on Ubuntu).
 
 ## Pull requests
 

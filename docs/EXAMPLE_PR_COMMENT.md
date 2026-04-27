@@ -9,6 +9,11 @@ What your team sees on a pull request (structure and tone; exact wording comes f
 **Spec:** `docs/openapi.yaml`  
 **Base:** `a1b2c3d` → **Head:** `e4f5g6h`
 
+### Policy
+
+_(Optional; only when `.api-drift-ci.toml` / `policy-file` is used.)_  
+Loaded **`.api-drift-ci.toml`**. Active oasdiff ignore file(s): 1.
+
 ### Summary
 
 Endpoints: deleted **1**. Paths: deleted **1**.

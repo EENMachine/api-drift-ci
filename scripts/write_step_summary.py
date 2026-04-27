@@ -15,7 +15,10 @@ def main() -> None:
     base = os.environ.get("BASE_SHA", "")[:7]
     head = os.environ.get("HEAD_SHA", "")[:7]
     pr_url = os.environ.get("PR_HTML_URL", "").strip()
-    breaking_exit = int(os.environ.get("BREAKING_EXIT_CODE", "0"))
+    try:
+        breaking_exit = int(os.environ.get("BREAKING_EXIT_CODE", "0"))
+    except ValueError:
+        breaking_exit = -1
     fail_on = os.environ.get("FAIL_ON_BREAKING", "true").lower() == "true"
     policy_note = os.environ.get("POLICY_NOTE", "").strip()
 
@@ -38,11 +41,16 @@ def main() -> None:
         except (json.JSONDecodeError, OSError, TypeError):
             pass
 
-    job_fails = fail_on and breaking_exit != 0
-    if breaking_exit != 0:
+    if breaking_exit < 0:
+        job_fails = False
+        verdict = "Could not parse **BREAKING_EXIT_CODE** from the environment."
+        result_label = "**Result: unknown**"
+    elif breaking_exit != 0:
+        job_fails = fail_on and True
         verdict = "Breaking changes reported by **oasdiff** (ERR)."
         result_label = "**Result: attention required**"
     else:
+        job_fails = False
         verdict = "No ERR-level breaking changes reported by **oasdiff** for this diff."
         result_label = "**Result: OK**"
 
@@ -58,7 +66,7 @@ def main() -> None:
         f"| **Spec** | `{spec}` |",
         f"| **Base → head** | `{base}` → `{head}` |",
         f"| **Fail on breaking** | `{'true' if fail_on else 'false'}` |",
-        f"| **oasdiff exit** (with `--fail-on ERR`) | `{breaking_exit}` |",
+        f"| **oasdiff exit** (with `--fail-on ERR`) | `{breaking_exit if breaking_exit >= 0 else 'n/a'}` |",
         f"| **This job** | **{'failed' if job_fails else 'passed'}** |",
         "",
     ]

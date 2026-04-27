@@ -24,3 +24,7 @@ The ignore files use **oasdiff’s native format** (text patterns per [oasdiff b
 ## Security note
 
 Policy and ignore files are taken from the **PR head** branch. For **fork** pull requests, treat them like any other contributor-controlled config: review changes carefully and combine with `allow-external-refs: false` when appropriate ([SECURITY.md](../SECURITY.md)).
+
+## Automation outputs
+
+The composite action also sets **`breaking-exit-code`** (and the reusable workflow forwards it as a job output) so other steps can branch on the same oasdiff verdict. See the [README](../README.md) “Action outputs” section.

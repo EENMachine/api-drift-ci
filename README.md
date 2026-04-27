@@ -46,7 +46,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: EENMachine/api-drift-ci@v0.1.2
+      - uses: EENMachine/api-drift-ci@v0.1.3
         with:
           spec-path: docs/openapi.yaml
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -74,7 +74,7 @@ permissions:
 
 jobs:
   drift:
-    uses: EENMachine/api-drift-ci/.github/workflows/reusable-openapi-drift.yml@v0.1.2
+    uses: EENMachine/api-drift-ci/.github/workflows/reusable-openapi-drift.yml@v0.1.3
     with:
       spec-path: docs/openapi.yaml
 ```
@@ -101,6 +101,14 @@ See [**docs/EXAMPLE_PR_COMMENT.md**](docs/EXAMPLE_PR_COMMENT.md) for what the st
 | `max-changelog-chars` | no | `14000` | Truncate changelog section for very large specs. |
 | `allow-external-refs` | no | `true` | Set **`false`** on untrusted fork PRs to disable remote `$ref` resolution ([**SECURITY.md**](SECURITY.md)). |
 | `policy-file` | no | _(auto)_ | Repo-relative TOML on **HEAD**; if unset, tries `.api-drift-ci.toml` then `api-drift-ci.toml`. See [**docs/POLICY_FILE.md**](docs/POLICY_FILE.md). |
+
+### Action outputs
+
+| Output | Description |
+| --- | --- |
+| `breaking-exit-code` | Exit code from `oasdiff breaking --fail-on ERR` (after policy ignores). **`0`** means no ERR-level breaking changes. On skipped events (not `pull_request`), **`0`**. Use in downstream steps: `steps.<id>.outputs.breaking-exit-code`. |
+
+The **reusable workflow** forwards the same value as job output `jobs.<job_id>.outputs.breaking-exit-code`.
 
 ---
 

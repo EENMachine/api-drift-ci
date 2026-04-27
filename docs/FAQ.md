@@ -38,3 +38,7 @@ Open the workflow run on GitHub → tab **Summary**. This action appends a **job
 ## How do I suppress known breaking findings in CI?
 
 Add a repo policy file (see [**POLICY_FILE.md**](POLICY_FILE.md)): **`.api-drift-ci.toml`** on your PR branch can point to oasdiff-native **`err_ignore_file`** / **`warn_ignore_file`** text files. Ignores are applied to **breaking** and **changelog** oasdiff runs (not to the JSON **summary** step).
+
+## Can a later workflow step read the oasdiff exit code?
+
+Yes. The composite action sets the output **`breaking-exit-code`** (and writes **`0`** when the event is skipped because it is not `pull_request`). Give the step an `id` and use `steps.<id>.outputs.breaking-exit-code`. The reusable workflow forwards the same value as **`jobs.<job_id>.outputs.breaking-exit-code`**.

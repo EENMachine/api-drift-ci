@@ -39,6 +39,7 @@ Internal playbook for releases, GitHub Marketplace, and positioning. **Customers
 
 - **Actions job summary** — every run writes to `$GITHUB_STEP_SUMMARY` so CI consumers see a verdict without opening the PR.
 - **Repo policy (`.api-drift-ci.toml`)** — maps to oasdiff’s native `--err-ignore` / `--warn-ignore` files; no parallel ignore grammar to learn beyond oasdiff’s own format ([docs/POLICY_FILE.md](POLICY_FILE.md)).
+- **Composable output `breaking-exit-code`** — downstream steps and reusable workflow callers can branch on the same exit code oasdiff used for gating.
 
 ### One-line pitch
 

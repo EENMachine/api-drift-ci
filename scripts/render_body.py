@@ -64,6 +64,11 @@ def main() -> None:
             "_Base revision had no file at this path; compared head against an empty OpenAPI stub "
             "(additive-only interpretation)._",
         ]
+    policy_note = os.environ.get("POLICY_NOTE", "").strip()
+    policy_src = os.environ.get("POLICY_SRC", "").strip()
+    if policy_note:
+        src = f" (`{policy_src}`)" if policy_src else ""
+        lines += ["", "### Policy", "", f"{policy_note}{src}", ""]
     lines += ["", "### Summary", "", "\n".join(summary_line), "", "### Breaking changes"]
     lines += [breaking_md if breaking_md else "_None detected._", "", "### Full changelog"]
     lines += [changelog_md if changelog_md else "_No changes._", "", "---"]

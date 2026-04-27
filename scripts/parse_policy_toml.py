@@ -23,7 +23,12 @@ def main() -> None:
         return
 
     def safe_repo_rel(p: str) -> bool:
-        path = Path(p)
+        s = p.strip()
+        if not s:
+            return False
+        if s.startswith(("/", "\\")):
+            return False
+        path = Path(s)
         if path.is_absolute():
             return False
         return ".." not in path.parts

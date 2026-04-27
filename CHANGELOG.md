@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-26
+
+### Added
+
+- Composite **output** `breaking-exit-code` for downstream workflow steps; reusable workflow exposes it as a **job output**.
+- PR comment **Policy** section when a policy file is active.
+- CI smoke tests: `scripts/test_policy_and_summary.py`.
+
+### Changed
+
+- Policy JSON is parsed via a temp file (safe with special characters).
+- `curl` installs oasdiff with retries and connect timeout.
+- `POLICY_NOTE` / `POLICY_SRC` are exported for the PR comment renderer.
+
 ## [0.1.2] - 2026-04-26
 
 ### Added
@@ -36,7 +50,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - CI workflow (`bash -n`, Python compile).
 - Documentation: shipping/marketing playbook, security notes, contributing.
 
-[Unreleased]: https://github.com/EENMachine/api-drift-ci/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/EENMachine/api-drift-ci/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/EENMachine/api-drift-ci/releases/tag/v0.1.3
 [0.1.2]: https://github.com/EENMachine/api-drift-ci/releases/tag/v0.1.2
 [0.1.1]: https://github.com/EENMachine/api-drift-ci/releases/tag/v0.1.1
 [0.1.0]: https://github.com/EENMachine/api-drift-ci/releases/tag/v0.1.0

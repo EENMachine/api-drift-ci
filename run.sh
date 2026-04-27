@@ -6,6 +6,9 @@ MARKER='<!-- api-drift-ci -->'
 
 if [[ "${GITHUB_EVENT_NAME:-}" != "pull_request" ]]; then
   echo "api-drift-ci: skipping (event is ${GITHUB_EVENT_NAME:-unset}, only pull_request is supported)"
+  if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+    echo "breaking-exit-code=0" >>"${GITHUB_OUTPUT}"
+  fi
   exit 0
 fi
 
@@ -52,7 +55,7 @@ fi
 OASDIFF_VER="${OASDIFF_VERSION}"
 OASDIFF_TGZ="https://github.com/oasdiff/oasdiff/releases/download/v${OASDIFF_VER}/oasdiff_${OASDIFF_VER}_linux_amd64.tar.gz"
 echo "Installing oasdiff ${OASDIFF_VER} from ${OASDIFF_TGZ}"
-curl -fsSL "${OASDIFF_TGZ}" | tar xz -C "${WORKDIR}"
+curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 15 "${OASDIFF_TGZ}" | tar xz -C "${WORKDIR}"
 export PATH="${WORKDIR}:${PATH}"
 oasdiff version
 
@@ -92,14 +95,15 @@ if [[ -n "${POLICY_SRC}" ]]; then
 fi
 
 if [[ -n "${POLICY_SRC}" ]]; then
-  POLICY_JSON="$(python3 "${ROOT}/scripts/parse_policy_toml.py" "${WORKDIR}/policy.toml")"
-  ERR_JSON="$(echo "${POLICY_JSON}" | jq -r '.error // empty')"
+  POLICY_JSON_FILE="${WORKDIR}/policy.parsed.json"
+  python3 "${ROOT}/scripts/parse_policy_toml.py" "${WORKDIR}/policy.toml" >"${POLICY_JSON_FILE}"
+  ERR_JSON="$(jq -r '.error // empty' "${POLICY_JSON_FILE}")"
   if [[ -n "${ERR_JSON}" ]]; then
     echo "::error::Invalid policy TOML (${POLICY_SRC}): ${ERR_JSON}"
     exit 1
   fi
-  ERR_REL="$(echo "${POLICY_JSON}" | jq -r '.err_ignore_file // empty')"
-  WARN_REL="$(echo "${POLICY_JSON}" | jq -r '.warn_ignore_file // empty')"
+  ERR_REL="$(jq -r '.err_ignore_file // empty' "${POLICY_JSON_FILE}")"
+  WARN_REL="$(jq -r '.warn_ignore_file // empty' "${POLICY_JSON_FILE}")"
   if [[ -n "${ERR_REL}" ]]; then
     if have_object "${HEAD_SHA}" "${ERR_REL}"; then
       git show "${HEAD_SHA}:${ERR_REL}" >"${WORKDIR}/err-ignore.txt"
@@ -145,9 +149,17 @@ oasdiff breaking "${BASE_FILE}" "${HEAD_FILE}" -f text --color never --fail-on E
 BREAKING_EXIT=$?
 set -e
 
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  {
+    echo "breaking-exit-code=${BREAKING_EXIT}"
+  } >>"${GITHUB_OUTPUT}"
+fi
+
 export MARKER COMMENT_TITLE MAX_CHANGELOG_CHARS SPEC_PATH BASE_SHA HEAD_SHA BASE_MODE
 export SUMMARY_JSON BREAKING_MD CHANGELOG_MD
 export PRODUCT_REPOSITORY="${PRODUCT_REPOSITORY:-}"
+export POLICY_NOTE="${POLICY_NOTE:-}"
+export POLICY_SRC="${POLICY_SRC:-}"
 python3 "${ROOT}/scripts/render_body.py" >"${BODY}"
 
 PR_NUMBER="$(jq -r .pull_request.number "${GITHUB_EVENT_PATH}")"

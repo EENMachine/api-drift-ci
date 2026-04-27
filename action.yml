@@ -37,10 +37,16 @@ inputs:
     description: Token with pull-requests write (typically secrets.GITHUB_TOKEN or github.token).
     required: true
 
+outputs:
+  breaking-exit-code:
+    description: Exit code from oasdiff breaking --fail-on ERR (after policy ignores). 0 means no ERR-level breaking changes.
+    value: ${{ steps.api_drift.outputs.breaking-exit-code }}
+
 runs:
   using: composite
   steps:
-    - name: Compare OpenAPI and upsert PR comment
+    - id: api_drift
+      name: Compare OpenAPI and upsert PR comment
       shell: bash
       env:
         SPEC_PATH: ${{ inputs.spec-path }}
